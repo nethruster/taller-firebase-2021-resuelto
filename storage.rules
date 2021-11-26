@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /images {
+      match /guests/{imageId} {
+        allow read:   if true;
+        allow create: if request.auth == null && isImage();
+      }
+      match /{userId}/{imageId} {
+        allow read: if true;
+        allow create: if isOwner() && isImage();
+        allow delete: if isOwner();
+
+        // isOwner comprueba si la imagen se guarda en la ruta dedicada para
+        // el usuario.
+        function isOwner() {
+          return request.auth != null && request.auth.uid == userId;
+        }
+      }
+
+      function isImage() {
+        return request.resource.contentType.matches('image/.*');
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /images/{image} {
+      allow read: if true;
+      allow create: if hasCorrectOwnerField() && containsValidFields();
+      allow update: if false;
+      allow delete: if isOwner();
+
+      // isOwner comprueba que el usuario que hace la petición coincide con el
+      // propietario del archivo.
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.owner.uid;
+      }
+
+      // hasCorrectOwnerField verifica que el campo de owner definido en la
+      // petición coincide con el del usuario que la hace.
+      function hasCorrectOwnerField() {
+        return (
+          request.auth == null && request.resource.data.owner == null
+        ) || (
+          request.auth != null &&
+          request.auth.uid == request.resource.data.owner.uid &&
+          request.auth.token.name == request.resource.data.owner.name
+        );
+      }
+
+      // containsValidFields hace un par de validaciones para verificar que,
+      // al menos, tienen el formato correcto.
+      function containsValidFields() {
+        let title =     request.resource.data.title;
+        let imagePath = request.resource.data.image.path;
+        let imageUrl =  request.resource.data.image.url;
+
+        return 
+          title is string && title.size() > 3 && title.size() <= 130 &&
+          imagePath is string && imagePath.size() > 3 &&
+          imageUrl is string && imageUrl.size() < 65535 && imageUrl.matches("(https?://)?[0-9A-Za-z-.]+\\.[0-9A-Za-z].*");
+      }
+    }
+  }
+}
