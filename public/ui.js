@@ -1,13 +1,40 @@
 import { deleteImage, logIn, logOut, uploadImage } from '/main.js'
-const accoutDropdown = document.getElementById("account-dropdown")
-const imageContainer = document.getElementById("image-container")
-const inputFile = document.getElementById("input-file")
-const inputTitle = document.getElementById("input-title")
-const loginBtn = document.getElementById("login-btn")
-const logoutBtn = document.getElementById("logout-btn")
-const modal = new bootstrap.Modal(document.getElementById("upload-modal"), {keyboard: false})
-const uploadForm = document.getElementById("upload-form")
 
+/**
+ * clearAllImages limpia los elementos de imagen.
+ */
+export function clearAllImages() {
+    imageContainer.innerHTML = ""
+}
+
+/**
+ * showLoginUi muestra el botón de iniciar o cerrar sesión en función de que
+ * se le pase un string con el nombre de usuario.
+ * 
+ * @param {string|null|undefined} username Si es un string, muestra el botón
+ *   de cerrar sesión. Si no, muestra el de iniciar sesión.
+ */
+ export function showLoginUi(username) {
+    if (typeof username === "string") {
+        accoutDropdown.classList.remove("d-none")
+        loginBtn.classList.add("d-none")
+        accoutDropdown.innerText = `Hola, ${username === "" ? "Usuario" : username}`
+    } else {
+        accoutDropdown.classList.add("d-none")
+        loginBtn.classList.remove("d-none")
+    }
+}
+
+/**
+ * addImage añade un elemento imagen a la interfaz.
+ * 
+ * @param {string} id ID de la imagen en la base de datos.
+ * @param {string} title Título de la imagen.
+ * @param {string} ownerName Nombre del propietario.
+ * @param {boolean} isOwner true si el usuario actual es propietario de la imagen, false si no lo es.
+ * @param {string} imageUrl URL pública de la imagen.
+ * @param {string} imagePath Ruta de la imagen en la base de datos.
+ */
 export function addImage(id, title, ownerName, isOwner, imageUrl, imagePath) {
     let col = document.createElement("div")
     col.classList.add("col-12", "col-md-6", "col-lg-4", "col-xl-3", "p-2") 
@@ -48,9 +75,20 @@ export function addImage(id, title, ownerName, isOwner, imageUrl, imagePath) {
     imageContainer.appendChild(col)
 }
 
-export function clearAllImages() {
-    imageContainer.innerHTML = ""
-}
+
+
+  /////////////////////////////////
+ //// Código interno de la UI ////
+/////////////////////////////////
+
+const accoutDropdown = document.getElementById("account-dropdown")
+const imageContainer = document.getElementById("image-container")
+const inputFile = document.getElementById("input-file")
+const inputTitle = document.getElementById("input-title")
+const loginBtn = document.getElementById("login-btn")
+const logoutBtn = document.getElementById("logout-btn")
+const modal = new bootstrap.Modal(document.getElementById("upload-modal"), {keyboard: false})
+const uploadForm = document.getElementById("upload-form")
 
 function handleImageDeleteBtnClick(e) {
     e.preventDefault()
@@ -77,8 +115,8 @@ logoutBtn.addEventListener('click', handleLogoutBtnClick)
 function handleLogoutBtnClick(e) {
     e.preventDefault()
     logOut()
+    location.reload()
 }
-
 
 uploadForm.addEventListener('input', handleInputTitleInput)
 function handleInputTitleInput(e) {
@@ -111,17 +149,4 @@ async function handleUploadFormSubmit(e) {
     }
     e.target.reset();
     modal.hide();
-}
-
-
-export function showLoginUi(username) {
-    if (username || username === "") {
-        accoutDropdown.classList.remove("d-none")
-        loginBtn.classList.add("d-none")
-
-        accoutDropdown.innerText = `Hola, ${username === "" ? "Usuario" : username}`
-    } else {
-        accoutDropdown.classList.add("d-none")
-        loginBtn.classList.remove("d-none")
-    }
 }
